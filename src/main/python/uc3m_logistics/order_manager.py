@@ -19,54 +19,45 @@ class OrderManager:
     @staticmethod
     def validate_ean13(ean13):
         """Method for validating an ean13 code"""
-        # PLEASE INCLUDE HERE THE CODE FOR VALIDATING THE EAN13
-        # RETURN TRUE IF THE EAN13 IS RIGHT, OR FALSE IN OTHER CASE
         checksum = 0
         ultima_cifra = -1
         regex_ean13 = re.compile("^[0-9]{13}$")
         valid_ean13_format = regex_ean13.fullmatch(ean13)
         if valid_ean13_format is None:
             raise OrderManagementException("Invalid EAN13 code string")
-
-        for i, digit in enumerate(reversed(ean13)):
+        for cifra, digit in enumerate(reversed(ean13)):
             try:
                 current_digit = int(digit)
             except ValueError as v_e:
                 raise OrderManagementException("Invalid EAN13 code string") from v_e
-            if i == 0:
+            if cifra == 0:
                 ultima_cifra = current_digit
             else:
-                checksum += current_digit * 3 if (i % 2 != 0) else current_digit
+                checksum += current_digit * 3 if (cifra % 2 != 0) else current_digit
         control_digit = (10 - (checksum % 10)) % 10
-
         if (ultima_cifra != -1) and (ultima_cifra == control_digit):
-            validation = True
-        else:
-            raise OrderManagementException("Invalid EAN13 control digit")
-        return validation
+            return True
+        raise OrderManagementException("Invalid EAN13 control digit")
 
     @staticmethod
     def validate_tracking_code(t_c):
         """Method for validating sha256 values"""
         myregex = re.compile(r"[0-9a-fA-F]{64}$")
-        res = myregex.fullmatch(t_c)
-        if not res:
+        if not myregex.fullmatch(t_c):
             raise OrderManagementException("tracking_code format is not valid")
 
     @staticmethod
     def save_store(data):
-        """Medthod for saving the orders store"""
+        """Method for saving the orders store"""
         file_store = JSON_FILES_PATH + "orders_store.json"
-        # first read the file
         try:
             with open(file_store, "r", encoding="utf-8", newline="") as file:
                 data_list = json.load(file)
         except FileNotFoundError:
-            # file is not found , so  init my data_list
+            # file is not found , so init my data_list
             data_list = []
         except json.JSONDecodeError as ex:
             raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
         found = False
         for item in data_list:
             if item["_OrderRequest__order_id"] == data.order_id:
@@ -96,12 +87,11 @@ class OrderManager:
     def save_orders_shipped(shipment):
         """Saves the shipping object into a file"""
         shimpents_store_file = JSON_FILES_PATH + "shipments_store.json"
-        # first read the file
         try:
             with open(shimpents_store_file, "r", encoding="utf-8", newline="") as file:
                 data_list = json.load(file)
         except FileNotFoundError:
-            # file is not found , so  init my data_list
+            # file is not found , so init my data_list
             data_list = []
         except json.JSONDecodeError as ex:
             raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
@@ -116,11 +106,8 @@ class OrderManager:
             raise OrderManagementException("Wrong file or file path") from ex
 
     # pylint: disable=too-many-arguments
-    def register_order(self, product_id,
-                       order_type,
-                       address,
-                       phone_number,
-                       zip_code):
+    def register_order(self, product_id, order_type,
+                       address, phone_number, zip_code):
         """Register the orders into the order's file"""
 
         myregex = re.compile(r"(Regular|Premium)")
@@ -144,14 +131,10 @@ class OrderManager:
             raise OrderManagementException("zip_code format is not valid")
         my_order = None
         if self.validate_ean13(product_id):
-            my_order = OrderRequest(product_id,
-                                    order_type,
-                                    address,
-                                    phone_number,
-                                    zip_code)
+            my_order = OrderRequest(product_id, order_type, address,
+                                    phone_number, zip_code)
 
         self.save_store(my_order)
-
         return my_order.order_id
 
     # pylint: disable=too-many-locals
@@ -218,11 +201,8 @@ class OrderManager:
                                 order_id=data["OrderID"],
                                 order_type=reg_type,
                                 delivery_email=data["ContactEmail"])
-
         # save the OrderShipping in shipments_store.json
-
         self.save_orders_shipped(my_sign)
-
         return my_sign.tracking_code
 
     def deliver_product(self, tracking_code):
@@ -231,7 +211,6 @@ class OrderManager:
 
         # check if this tracking_code is in shipments_store
         shimpents_store_file = JSON_FILES_PATH + "shipments_store.json"
-        # first read the file
         try:
             with open(shimpents_store_file, "r", encoding="utf-8", newline="") as file:
                 data_list = json.load(file)

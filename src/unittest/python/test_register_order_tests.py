@@ -116,7 +116,7 @@ class TestRegisterOrder(unittest.TestCase):
     #pylint: disable=too-many-locals
     @freeze_time("2023-03-08")
     def test_parametrized_valid_request_vaccination(self):
-        "Parametrized tests: valid cases"
+        """Parametrized tests: valid cases"""
         file_store = JSON_FILES_PATH + "orders_store.json"
         if os.path.isfile(file_store):
             os.remove(file_store)

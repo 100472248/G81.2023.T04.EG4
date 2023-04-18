@@ -12,19 +12,19 @@ from uc3m_logistics import JSON_FILES_RF2_PATH
 
 class TestDeliverProduct(TestCase):
     """Class for testing deliver_product"""
+
     @freeze_time("2023-03-08")
     def setUp(self):
         """first prepare the stores"""
         file_store_patient = JSON_FILES_PATH + "orders_store.json"
         file_shipments_store = JSON_FILES_PATH + "shipments_store.json"
 
-
         if os.path.isfile(file_store_patient):
             os.remove(file_store_patient)
         if os.path.isfile(file_shipments_store):
             os.remove(file_shipments_store)
 
-        #add orders and shipping info in the stores
+        # add orders and shipping info in the stores
         my_manager = OrderManager()
         # add an order in the store
         file_test = JSON_FILES_RF2_PATH + "valid.json"
@@ -34,8 +34,6 @@ class TestDeliverProduct(TestCase):
                                   phone_number="+34123456789",
                                   zip_code="01000")
         my_manager.send_product(file_test)
-
-
 
     @freeze_time("2023-03-15")
     def test_deliver_product_ok(self):
@@ -151,9 +149,9 @@ class TestDeliverProduct(TestCase):
     @freeze_time("2023-03-18")
     def test_deliver_product_shipments_store_is_empty(self):
         """for testing: shipments_store is empty"""
-        #write a shipments_store empty
+        # write a shipments_store empty
         file_shipments_store = JSON_FILES_PATH + "shipments_store.json"
-        data_list=[]
+        data_list = []
         with open(file_shipments_store, "w", encoding="utf-8", newline="") as file:
             json.dump(data_list, file, indent=2)
 
