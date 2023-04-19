@@ -1,49 +1,17 @@
-"""Module """
-import re
+"""..."""
 import json
+import re
 from datetime import datetime
 from freezegun import freeze_time
 from uc3m_logistics.order_request import OrderRequest
-from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_shipping import OrderShipping
+from uc3m_logistics.order_manager import OrderManager
+from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
 
 
-class OrderManager:
-    """Class for providing the methods for managing the orders process"""
-
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def validate_ean13(ean13):
-        """Method for validating an ean13 code"""
-        checksum = 0
-        ultima_cifra = -1
-        regex_ean13 = re.compile("^[0-9]{13}$")
-        valid_ean13_format = regex_ean13.fullmatch(ean13)
-        if valid_ean13_format is None:
-            raise OrderManagementException("Invalid EAN13 code string")
-        for cifra, digit in enumerate(reversed(ean13)):
-            try:
-                current_digit = int(digit)
-            except ValueError as v_e:
-                raise OrderManagementException("Invalid EAN13 code string") from v_e
-            if cifra == 0:
-                ultima_cifra = current_digit
-            else:
-                checksum += current_digit * 3 if (cifra % 2 != 0) else current_digit
-        control_digit = (10 - (checksum % 10)) % 10
-        if (ultima_cifra != -1) and (ultima_cifra == control_digit):
-            return True
-        raise OrderManagementException("Invalid EAN13 control digit")
-
-    @staticmethod
-    def validate_tracking_code(t_c):
-        """Method for validating sha256 values"""
-        myregex = re.compile(r"[0-9a-fA-F]{64}$")
-        if not myregex.fullmatch(t_c):
-            raise OrderManagementException("tracking_code format is not valid")
+class Jsonmethods:
+    """Clase con las funciones de los json."""
 
     @staticmethod
     def save_store(data):
@@ -104,56 +72,6 @@ class OrderManager:
         except FileNotFoundError as ex:
             raise OrderManagementException("Wrong file or file path") from ex
 
-    # pylint: disable=too-many-arguments
-    def register_order(self, product_id, order_type,
-                       address, phone_number, zip_code):
-        """Register the orders into the order's file"""
-        self.validate_ean13(product_id)
-        self.validate_order_type(order_type)
-        self.validate_address(address)
-        self.validate_phone_number(phone_number)
-        self.validate_zip_code(zip_code)
-        my_order = OrderRequest(product_id, order_type, address,
-                                phone_number, zip_code)
-        self.save_store(my_order)
-        return my_order.order_id
-
-    @staticmethod
-    def validate_order_type(order_type):
-        """Estudia si la orden es regular o premium."""
-        myregex = re.compile(r"(Regular|Premium)")
-        validation = myregex.fullmatch(order_type)
-        if not validation:
-            raise OrderManagementException("order_type is not valid")
-        return True
-
-    @staticmethod
-    def validate_address(address):
-        """Indica si la dirección es indicada."""
-        myregex = re.compile(r"^(?=^.{20,100}$)(([a-zA-Z0-9]+\s)+[a-zA-Z0-9]+)$")
-        if not myregex.fullmatch(address):
-            raise OrderManagementException("address is not valid")
-        return True
-
-    @staticmethod
-    def validate_phone_number(phone_number):
-        """Valida el número de teléfono."""
-        myregex = re.compile(r"^(\+)[0-9]{11}")
-        if not myregex.fullmatch(phone_number):
-            raise OrderManagementException("phone number is not valid")
-        return True
-
-    @staticmethod
-    def validate_zip_code(zip_code):
-        """Estudia si el código zip es válido."""
-        if zip_code.isnumeric() and len(zip_code) == 5:
-            if int(zip_code) > 52999 or int(zip_code) < 1000:
-                raise OrderManagementException("zip_code is not valid")
-        else:
-            raise OrderManagementException("zip_code format is not valid")
-        return True
-
-    # pylint: disable=too-many-locals
     def send_product(self, input_file):
         """Sends the order included in the input_file"""
         try:
@@ -221,10 +139,11 @@ class OrderManager:
         self.save_orders_shipped(my_sign)
         return my_sign.tracking_code
 
-    def deliver_product(self, tracking_code):
+    @staticmethod
+    def deliver_product(tracking_code):
         """Register the delivery of the product"""
-        self.validate_tracking_code(tracking_code)
-
+        my_order = OrderManager()
+        my_order.validate_tracking_code(tracking_code)
         # check if this tracking_code is in shipments_store
         shimpents_store_file = JSON_FILES_PATH + "shipments_store.json"
         try:
