@@ -3,6 +3,7 @@ from unittest import TestCase
 import os
 import json
 import hashlib
+import shutil
 from freezegun import freeze_time
 from uc3m_logistics import OrderManager
 from uc3m_logistics import OrderManagementException
@@ -178,6 +179,12 @@ class TestSendProduct(TestCase):
         file_store = JSON_FILES_PATH + "orders_store.json"
         file_store_date = JSON_FILES_PATH + "shipments_store.json"
 
+        if os.path.isfile(JSON_FILES_PATH + "swap.json"):
+            os.remove(JSON_FILES_PATH + "swap.json")
+        if not os.path.isfile(JSON_FILES_PATH + "orders_store_manipulated.json"):
+            shutil.copy(JSON_FILES_RF2_PATH + "orders_store_manipulated.json",
+                        JSON_FILES_PATH + "orders_store_manipulated.json")
+
         # rename the manipulated order's store
         if os.path.isfile(file_store):
             os.rename(file_store, JSON_FILES_PATH + "swap.json")
@@ -191,8 +198,12 @@ class TestSendProduct(TestCase):
             hash_original = ""
 
         # check the method
-        with self.assertRaises(OrderManagementException) as c_m:
+        exception_message = "Exception not raised"
+        try:
             my_manager.send_product(file_test)
+        # pylint: disable=broad-except
+        except Exception as exception_raised:
+            exception_message = exception_raised.__str__()
 
         # restore the original orders' store
         os.rename(file_store, JSON_FILES_PATH + "orders_store_manipulated.json")
@@ -205,5 +216,5 @@ class TestSendProduct(TestCase):
         else:
             hash_new = ""
 
-        self.assertEqual(c_m.exception.message, "Orders' data have been manipulated")
+        self.assertEqual(exception_message, "Orders' data have been manipulated")
         self.assertEqual(hash_new, hash_original)
