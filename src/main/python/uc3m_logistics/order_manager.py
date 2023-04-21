@@ -154,6 +154,7 @@ class OrderManager:
         return True
 
     # pylint: disable=too-many-locals
+
     def send_product(self, input_file):
         """Sends the order included in the input_file"""
         try:
@@ -168,8 +169,7 @@ class OrderManager:
         # check all the information
         try:
             myregex = re.compile(r"[0-9a-fA-F]{32}$")
-            validation = myregex.fullmatch(data["OrderID"])
-            if not validation:
+            if not myregex.fullmatch(data["OrderID"]):
                 raise OrderManagementException("order id is not valid")
         except KeyError as ex:
             raise OrderManagementException("Bad label") from ex
@@ -177,42 +177,32 @@ class OrderManager:
         try:
             regex_email = r'^[a-z0-9]+([\._]?[a-z0-9]+)+[@](\w+[.])+\w{2,3}$'
             myregex = re.compile(regex_email)
-            validation = myregex.fullmatch(data["ContactEmail"])
-            if not validation:
+            if not myregex.fullmatch(data["ContactEmail"]):
                 raise OrderManagementException("contact email is not valid")
         except KeyError as ex:
             raise OrderManagementException("Bad label") from ex
         file_store = JSON_FILES_PATH + "orders_store.json"
-
         with open(file_store, "r", encoding="utf-8", newline="") as file:
             data_list = json.load(file)
         found = False
         pro_id = None
         reg_type = None
         for item in data_list:
-            if item["_OrderRequest__order_id"] == data["OrderID"]:
-                found = True
-                # retrieve the orders data
-                pro_id = item["_OrderRequest__product_id"]
-                address = item["_OrderRequest__delivery_address"]
-                reg_type = item["_OrderRequest__order_type"]
-                phone = item["_OrderRequest__phone_number"]
-                order_timestamp = item["_OrderRequest__time_stamp"]
-                zip_code = item["_OrderRequest__zip_code"]
-                # set the time when the order was registered for checking the md5
-                with freeze_time(datetime.fromtimestamp(order_timestamp).date()):
-                    order = OrderRequest(product_id=pro_id,
-                                         delivery_address=address,
-                                         order_type=reg_type,
-                                         phone_number=phone,
-                                         zip_code=zip_code)
-
-                if order.order_id != data["OrderID"]:
-                    raise OrderManagementException("Orders' data have been manipulated")
-
+            # retrieve the orders data
+            pro_id = item["_OrderRequest__product_id"]
+            reg_type = item["_OrderRequest__order_type"]
+            # set the time when the order was registered for checking the md5
+            with freeze_time(datetime.fromtimestamp(item["_OrderRequest__time_stamp"]).date()):
+                order = OrderRequest(product_id=item["_OrderRequest__product_id"],
+                                     delivery_address=item["_OrderRequest__delivery_address"],
+                                     order_type=item["_OrderRequest__order_type"],
+                                     phone_number=item["_OrderRequest__phone_number"],
+                                     zip_code=item["_OrderRequest__zip_code"])
+            if order.order_id != data["OrderID"]:
+                raise OrderManagementException("Orders' data have been manipulated")
+            found = True
         if not found:
             raise OrderManagementException("order_id not found")
-
         my_sign = OrderShipping(product_id=pro_id,
                                 order_id=data["OrderID"],
                                 order_type=reg_type,
