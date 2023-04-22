@@ -7,6 +7,7 @@ from uc3m_logistics.order_request import OrderRequest
 from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_shipping import OrderShipping
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
+from uc3m_logistics.json_methods import Jsonmethods
 
 
 class OrderManager:
@@ -21,22 +22,19 @@ class OrderManager:
         checksum = 0
         ultima_cifra = -1
         regex_ean13 = re.compile("^[0-9]{13}$")
-        valid_ean13_format = regex_ean13.fullmatch(ean13)
-        if valid_ean13_format is None:
+        if regex_ean13.fullmatch(ean13) is None:
             raise OrderManagementException("Invalid EAN13 code string")
-        for cifra, digit in enumerate(reversed(ean13)):
-            try:
-                current_digit = int(digit)
-            except ValueError as v_e:
-                raise OrderManagementException("Invalid EAN13 code string") from v_e
-            if cifra == 0:
-                ultima_cifra = current_digit
+        for cifra, digit in enumerate(ean13):
+            if cifra == 12:
+                ultima_cifra = int(digit)
+            elif cifra % 2 != 0:
+                checksum += int(digit) * 3
             else:
-                checksum += current_digit * 3 if (cifra % 2 != 0) else current_digit
+                checksum += int(digit)
         control_digit = (10 - (checksum % 10)) % 10
-        if (ultima_cifra != -1) and (ultima_cifra == control_digit):
-            return True
-        raise OrderManagementException("Invalid EAN13 control digit")
+        if ultima_cifra != control_digit:
+            raise OrderManagementException("Invalid EAN13 control digit")
+        return True
 
     @staticmethod
     def validate_tracking_code(t_c):
@@ -168,19 +166,11 @@ class OrderManager:
 
         # check all the information
         try:
-            myregex = re.compile(r"[0-9a-fA-F]{32}$")
-            if not myregex.fullmatch(data["OrderID"]):
-                raise OrderManagementException("order id is not valid")
+            check_send = Jsonmethods()
+            check_send.validate_send_product(data["OrderID"], data["ContactEmail"])
         except KeyError as ex:
             raise OrderManagementException("Bad label") from ex
 
-        try:
-            regex_email = r'^[a-z0-9]+([\._]?[a-z0-9]+)+[@](\w+[.])+\w{2,3}$'
-            myregex = re.compile(regex_email)
-            if not myregex.fullmatch(data["ContactEmail"]):
-                raise OrderManagementException("contact email is not valid")
-        except KeyError as ex:
-            raise OrderManagementException("Bad label") from ex
         file_store = JSON_FILES_PATH + "orders_store.json"
         with open(file_store, "r", encoding="utf-8", newline="") as file:
             data_list = json.load(file)
@@ -188,9 +178,6 @@ class OrderManager:
         pro_id = None
         reg_type = None
         for item in data_list:
-            # retrieve the orders data
-            pro_id = item["_OrderRequest__product_id"]
-            reg_type = item["_OrderRequest__order_type"]
             # set the time when the order was registered for checking the md5
             with freeze_time(datetime.fromtimestamp(item["_OrderRequest__time_stamp"]).date()):
                 order = OrderRequest(product_id=item["_OrderRequest__product_id"],
@@ -201,9 +188,11 @@ class OrderManager:
             if order.order_id != data["OrderID"]:
                 raise OrderManagementException("Orders' data have been manipulated")
             found = True
+            pro_id = order.product_id
+            reg_type = order.order_type
         if not found:
             raise OrderManagementException("order_id not found")
-        my_sign = OrderShipping(product_id=pro_id,
+        my_sign = OrderShipping(product_id=item["_OrderRequest__product_id"],
                                 order_id=data["OrderID"],
                                 order_type=reg_type,
                                 delivery_email=data["ContactEmail"])
