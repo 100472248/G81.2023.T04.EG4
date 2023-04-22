@@ -156,27 +156,17 @@ class OrderManager:
     def send_product(self, input_file):
         """Sends the order included in the input_file"""
         try:
-            with open(input_file, "r", encoding="utf-8", newline="") as file:
-                data = json.load(file)
-        except FileNotFoundError as ex:
-            # file is not found
-            raise OrderManagementException("File is not found") from ex
-        except json.JSONDecodeError as ex:
-            raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
-        # check all the information
-        try:
+            # check all the information
             check_send = Jsonmethods()
-            check_send.validate_send_product(data["OrderID"], data["ContactEmail"])
+            data = check_send.validate_product(input_file)
+            check_send.check_product(data["OrderID"], data["ContactEmail"])
         except KeyError as ex:
             raise OrderManagementException("Bad label") from ex
-
         file_store = JSON_FILES_PATH + "orders_store.json"
         with open(file_store, "r", encoding="utf-8", newline="") as file:
             data_list = json.load(file)
         found = False
-        pro_id = None
-        reg_type = None
+        order = None
         for item in data_list:
             # set the time when the order was registered for checking the md5
             with freeze_time(datetime.fromtimestamp(item["_OrderRequest__time_stamp"]).date()):
@@ -188,13 +178,11 @@ class OrderManager:
             if order.order_id != data["OrderID"]:
                 raise OrderManagementException("Orders' data have been manipulated")
             found = True
-            pro_id = order.product_id
-            reg_type = order.order_type
         if not found:
             raise OrderManagementException("order_id not found")
-        my_sign = OrderShipping(product_id=item["_OrderRequest__product_id"],
+        my_sign = OrderShipping(product_id=order.product_id,
                                 order_id=data["OrderID"],
-                                order_type=reg_type,
+                                order_type=order.order_type,
                                 delivery_email=data["ContactEmail"])
         # save the OrderShipping in shipments_store.json
         self.save_orders_shipped(my_sign)
