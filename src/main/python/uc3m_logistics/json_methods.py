@@ -13,7 +13,7 @@ class Jsonmethods:
         regex_id = re.compile(r"[0-9a-fA-F]{32}$")
         if not regex_id.fullmatch(order_id):
             raise OrderManagementException("order id is not valid")
-        regex_email = re.compile(r"^[a-z0-9]+([\._]?[a-z0-9]+)+@(\w+[.])+\w{2,3}$")
+        regex_email = re.compile(r"^[a-z0-9]+([._]?[a-z0-9]+)+@(\w+[.])+\w{2,3}$")
         if not regex_email.fullmatch(email):
             raise OrderManagementException("contact email is not valid")
         return True

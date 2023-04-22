@@ -17,34 +17,7 @@ class OrderManager:
         pass
 
     @staticmethod
-    def validate_ean13(ean13):
-        """Method for validating an ean13 code"""
-        checksum = 0
-        ultima_cifra = -1
-        regex_ean13 = re.compile("^[0-9]{13}$")
-        if regex_ean13.fullmatch(ean13) is None:
-            raise OrderManagementException("Invalid EAN13 code string")
-        for cifra, digit in enumerate(ean13):
-            if cifra == 12:
-                ultima_cifra = int(digit)
-            elif cifra % 2 != 0:
-                checksum += int(digit) * 3
-            else:
-                checksum += int(digit)
-        control_digit = (10 - (checksum % 10)) % 10
-        if ultima_cifra != control_digit:
-            raise OrderManagementException("Invalid EAN13 control digit")
-        return True
-
-    @staticmethod
-    def validate_tracking_code(t_c):
-        """Method for validating sha256 values"""
-        myregex = re.compile(r"[0-9a-fA-F]{64}$")
-        if not myregex.fullmatch(t_c):
-            raise OrderManagementException("tracking_code format is not valid")
-
-    @staticmethod
-    def save_store(data):
+    def save_store(data: OrderRequest):
         """Method for saving the orders store"""
         file_store = JSON_FILES_PATH + "orders_store.json"
         try:
@@ -71,7 +44,7 @@ class OrderManager:
         return True
 
     @staticmethod
-    def save_fast(data):
+    def save_fast(data: OrderRequest):
         """Method for saving the orders store"""
         orders_store = JSON_FILES_PATH + "orders_store.json"
         with open(orders_store, "r+", encoding="utf-8", newline="") as file:
@@ -81,7 +54,7 @@ class OrderManager:
             json.dump(data_list, file, indent=2)
 
     @staticmethod
-    def save_orders_shipped(shipment):
+    def save_orders_shipped(shipment: OrderShipping):
         """Saves the shipping object into a file"""
         shimpents_store_file = JSON_FILES_PATH + "shipments_store.json"
         try:
@@ -115,6 +88,33 @@ class OrderManager:
                                 phone_number, zip_code)
         self.save_store(my_order)
         return my_order.order_id
+
+    @staticmethod
+    def validate_ean13(ean13):
+        """Method for validating an ean13 code"""
+        checksum = 0
+        ultima_cifra = -1
+        regex_ean13 = re.compile("^[0-9]{13}$")
+        if regex_ean13.fullmatch(ean13) is None:
+            raise OrderManagementException("Invalid EAN13 code string")
+        for cifra, digit in enumerate(ean13):
+            if cifra == 12:
+                ultima_cifra = int(digit)
+            elif cifra % 2 != 0:
+                checksum += int(digit) * 3
+            else:
+                checksum += int(digit)
+        control_digit = (10 - (checksum % 10)) % 10
+        if ultima_cifra != control_digit:
+            raise OrderManagementException("Invalid EAN13 control digit")
+        return True
+
+    @staticmethod
+    def validate_tracking_code(tracking_code):
+        """Method for validating sha256 values"""
+        myregex = re.compile(r"[0-9a-fA-F]{64}$")
+        if not myregex.fullmatch(tracking_code):
+            raise OrderManagementException("tracking_code format is not valid")
 
     @staticmethod
     def validate_order_type(order_type):
