@@ -211,34 +211,36 @@ class OrderManager:
         self.save_orders_shipped(my_sign)
         return my_sign.tracking_code
 
-    def deliver_product(self, tracking_code):
-        """Register the delivery of the product"""
+    def check_delivery(self, tracking_code):
+        """Checks whether the tracking_code is in shipments_store and delivery_day is
+         correct"""
         self.validate_tracking_code(tracking_code)
-
-        # check if this tracking_code is in shipments_store
-        shimpents_store_file = JSON_FILES_PATH + "shipments_store.json"
+        shipments_store_file = JSON_FILES_PATH + "shipments_store.json"
         try:
-            with open(shimpents_store_file, "r", encoding="utf-8", newline="") as file:
+            with open(shipments_store_file, "r", encoding="utf-8", newline="") as file:
                 data_list = json.load(file)
         except json.JSONDecodeError as ex:
             raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
         except FileNotFoundError as ex:
             raise OrderManagementException("shipments_store not found") from ex
-        # search this tracking_code
+
         found = False
-        del_timestamp = None
+        delivery_day_timestamp = None
         for item in data_list:
             if item["_OrderShipping__tracking_code"] == tracking_code:
                 found = True
-                del_timestamp = item["_OrderShipping__delivery_day"]
+                delivery_day_timestamp = item["_OrderShipping__delivery_day"]
         if not found:
             raise OrderManagementException("tracking_code is not found")
 
         today = datetime.today().date()
-        delivery_date = datetime.fromtimestamp(del_timestamp).date()
+        delivery_date = datetime.fromtimestamp(delivery_day_timestamp).date()
         if delivery_date != today:
             raise OrderManagementException("Today is not the delivery date")
 
+    def deliver_product(self, tracking_code):
+        """Register the delivery of the product"""
+        self.check_delivery(tracking_code)
         shipments_file = JSON_FILES_PATH + "shipments_delivered.json"
 
         try:
@@ -250,7 +252,7 @@ class OrderManager:
         except json.JSONDecodeError as ex:
             raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
-            # append the delivery info
+        # append the delivery info
         data_list.append(str(tracking_code))
         data_list.append(str(datetime.utcnow()))
         try:
