@@ -1,8 +1,10 @@
+"""..."""
 import re
 from uc3m_logistics.order_management_exception import OrderManagementException
 
 
-class Attribute():
+class Attribute:
+    """Clase madre de los atributos"""
     def __init__(self):
         self._attr_value = ""
         self._error_message = ""
@@ -16,6 +18,7 @@ class Attribute():
 
     @property
     def value(self):
+        """Para crear la property de attr_value"""
         return self._attr_value
 
     @value.setter

@@ -1,5 +1,4 @@
 """Module """
-import re
 import json
 from datetime import datetime
 from freezegun import freeze_time
@@ -90,11 +89,16 @@ class OrderManager:
         """Sends the order included in the input_file"""
         try:
             # check all the information
-            check_send = CheckMethods()
-            data = check_send.validate_product(input_file)
-            check_send.check_product(data["OrderID"], data["ContactEmail"])
+            my_sign = OrderShipping(input_file)
         except KeyError as ex:
             raise OrderManagementException("Bad label") from ex
+        # save the OrderShipping in shipments_store.json
+        self.save_orders_shipped(my_sign)
+        return my_sign.tracking_code
+
+    @staticmethod
+    def check_order_id(data):
+        """Para estudiar si el ID es correcto."""
         file_store = JSON_FILES_PATH + "orders_store.json"
         with open(file_store, "r", encoding="utf-8", newline="") as file:
             data_list = json.load(file)
@@ -113,13 +117,7 @@ class OrderManager:
             found = True
         if not found:
             raise OrderManagementException("order_id not found")
-        my_sign = OrderShipping(product_id=order.product_id,
-                                order_id=data["OrderID"],
-                                order_type=order.order_type,
-                                delivery_email=data["ContactEmail"])
-        # save the OrderShipping in shipments_store.json
-        self.save_orders_shipped(my_sign)
-        return my_sign.tracking_code
+        return order
 
     @staticmethod
     def deliver_product(tracking_code):

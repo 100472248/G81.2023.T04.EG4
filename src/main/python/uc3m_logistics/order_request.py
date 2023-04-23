@@ -6,7 +6,7 @@ from datetime import datetime
 from uc3m_logistics.order_management_exception import OrderManagementException
 from .attribute_phone_number import PhoneNumber
 from .attribute_order_type import OrderType
-from .attribute_delivery_address import DeliveryAdress
+from .attribute_delivery_address import DeliveryAddress
 from .attribute_product_id import ProductId
 from .attribute_zip_code import ZipCode
 
@@ -18,7 +18,7 @@ class OrderRequest:
     def __init__(self, product_id, order_type,
                  delivery_address, phone_number, zip_code):
         self.__product_id = ProductId(product_id).value
-        self.__delivery_address = DeliveryAdress(delivery_address).value
+        self.__delivery_address = DeliveryAddress(delivery_address).value
         self.__order_type = OrderType(order_type).value
         self.__phone_number = PhoneNumber(phone_number).value
         self.__zip_code = ZipCode(zip_code).value

@@ -1,15 +1,13 @@
 """..."""
 import json
-import re
+from datetime import datetime
 from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
-from .attribute_tracking_code import TrackingCode
-from datetime import datetime
+from uc3m_logistics.attribute_tracking_code import TrackingCode
 
 
 class CheckMethods:
-    """Clase con las funciones relacionadas con comprobar la validez de los diversos productos o atributos
-    de order_request y order_shipping para usarlos en order_manager"""
+    """Clase que comprueba las funciones del deliver-product."""
 
     def __init__(self):
         pass
@@ -44,27 +42,3 @@ class CheckMethods:
         today = datetime.today().date()
         if delivery_day != today:
             raise OrderManagementException("Today is not the delivery date")
-
-    @staticmethod
-    def check_product(order_id, email):
-        """Analiza todos los campos del producto a enviar"""
-        regex_id = re.compile(r"[0-9a-fA-F]{32}$")
-        if not regex_id.fullmatch(order_id):
-            raise OrderManagementException("order id is not valid")
-        regex_email = re.compile(r"^[a-z0-9]+([._]?[a-z0-9]+)+@(\w+[.])+\w{2,3}$")
-        if not regex_email.fullmatch(email):
-            raise OrderManagementException("contact email is not valid")
-        return True
-
-    @staticmethod
-    def validate_product(input_file):
-        """Checks the order included in the input_file"""
-        try:
-            with open(input_file, "r", encoding="utf-8", newline="") as file:
-                data = json.load(file)
-        except FileNotFoundError as ex:
-            # file is not found
-            raise OrderManagementException("File is not found") from ex
-        except json.JSONDecodeError as ex:
-            raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
-        return data
