@@ -4,8 +4,10 @@ import re
 from uc3m_logistics.order_management_exception import OrderManagementException
 
 
-class Jsonmethods:
+class Sendmethods:
     """Clase con las funciones de los json."""
+    def __init__(self):
+        pass
 
     @staticmethod
     def check_product(order_id, email):

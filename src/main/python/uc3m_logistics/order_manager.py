@@ -7,7 +7,7 @@ from uc3m_logistics.order_request import OrderRequest
 from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_shipping import OrderShipping
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
-from uc3m_logistics.json_methods import Jsonmethods
+from uc3m_logistics.send_methods import Sendmethods
 
 
 class OrderManager:
@@ -79,13 +79,14 @@ class OrderManager:
     def register_order(self, product_id, order_type,
                        address, phone_number, zip_code):
         """Register the orders into the order's file"""
-        self.validate_ean13(product_id)
-        self.validate_order_type(order_type)
-        self.validate_address(address)
-        self.validate_phone_number(phone_number)
-        self.validate_zip_code(zip_code)
         my_order = OrderRequest(product_id, order_type, address,
                                 phone_number, zip_code)
+        self.validate_ean13(product_id)
+        self.validate_attr(order_type, r"(Regular|Premium)", "order_type is not valid")
+        self.validate_attr(address, r"^(?=^.{20,100}$)(([a-zA-Z0-9]+\s)+[a-zA-Z0-9]+)$",
+                           "address is not valid")
+        self.validate_attr(phone_number, r"^(\+)[0-9]{11}", "phone number is not valid")
+        self.validate_zip_code(zip_code)
         self.save_store(my_order)
         return my_order.order_id
 
@@ -110,35 +111,11 @@ class OrderManager:
         return True
 
     @staticmethod
-    def validate_tracking_code(tracking_code):
-        """Method for validating sha256 values"""
-        myregex = re.compile(r"[0-9a-fA-F]{64}$")
-        if not myregex.fullmatch(tracking_code):
-            raise OrderManagementException("tracking_code format is not valid")
-
-    @staticmethod
-    def validate_order_type(order_type):
-        """Estudia si la orden es regular o premium."""
-        myregex = re.compile(r"(Regular|Premium)")
-        validation = myregex.fullmatch(order_type)
-        if not validation:
-            raise OrderManagementException("order_type is not valid")
-        return True
-
-    @staticmethod
-    def validate_address(address):
-        """Indica si la dirección es indicada."""
-        myregex = re.compile(r"^(?=^.{20,100}$)(([a-zA-Z0-9]+\s)+[a-zA-Z0-9]+)$")
-        if not myregex.fullmatch(address):
-            raise OrderManagementException("address is not valid")
-        return True
-
-    @staticmethod
-    def validate_phone_number(phone_number):
-        """Valida el número de teléfono."""
-        myregex = re.compile(r"^(\+)[0-9]{11}")
-        if not myregex.fullmatch(phone_number):
-            raise OrderManagementException("phone number is not valid")
+    def validate_attr(atributo, patron, mensaje_error: str):
+        """Función para validar los distintos atributos"""
+        myregex = re.compile(patron)
+        if not myregex.fullmatch(atributo):
+            raise OrderManagementException(mensaje_error)
         return True
 
     @staticmethod
@@ -151,13 +128,20 @@ class OrderManager:
             raise OrderManagementException("zip_code format is not valid")
         return True
 
+    @staticmethod
+    def validate_tracking_code(tracking_code):
+        """Method for validating sha256 values"""
+        myregex = re.compile(r"[0-9a-fA-F]{64}$")
+        if not myregex.fullmatch(tracking_code):
+            raise OrderManagementException("tracking_code format is not valid")
+
     # pylint: disable=too-many-locals
 
     def send_product(self, input_file):
         """Sends the order included in the input_file"""
         try:
             # check all the information
-            check_send = Jsonmethods()
+            check_send = Sendmethods()
             data = check_send.validate_product(input_file)
             check_send.check_product(data["OrderID"], data["ContactEmail"])
         except KeyError as ex:
