@@ -14,10 +14,8 @@ class CheckMethods:
     def __init__(self):
         pass
 
-    @staticmethod
-    def check_delivery(tracking_code):
-        """Checks whether the tracking_code is in shipments_store and delivery_day is
-         correct"""
+    def check_delivery(self, tracking_code):
+        """Checks whether the delivery is correct or not"""
         TrackingCode(tracking_code)
         shipments_store_file = JSON_FILES_PATH + "shipments_store.json"
         try:
@@ -37,9 +35,14 @@ class CheckMethods:
         if not found:
             raise OrderManagementException("tracking_code is not found")
 
+        delivery_day = datetime.fromtimestamp(delivery_day_timestamp).date()
+        self.check_delivery_date(delivery_day)
+
+    @staticmethod
+    def check_delivery_date(delivery_day):
+        """checks if the given date == today's date"""
         today = datetime.today().date()
-        delivery_date = datetime.fromtimestamp(delivery_day_timestamp).date()
-        if delivery_date != today:
+        if delivery_day != today:
             raise OrderManagementException("Today is not the delivery date")
 
     @staticmethod
