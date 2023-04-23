@@ -3,10 +3,11 @@ import json
 import re
 from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
+from .attribute_tracking_code import TrackingCode
 from datetime import datetime
 
 
-class Sendmethods:
+class CheckMethods:
     """Clase con las funciones relacionadas con comprobar la validez de los diversos productos o atributos
     de order_request y order_shipping para usarlos en order_manager"""
 
@@ -14,16 +15,10 @@ class Sendmethods:
         pass
 
     @staticmethod
-    def validate_tracking_code(tracking_code):
-        """Method for validating sha256 values"""
-        myregex = re.compile(r"[0-9a-fA-F]{64}$")
-        if not myregex.fullmatch(tracking_code):
-            raise OrderManagementException("tracking_code format is not valid")
-
-    def check_delivery(self, tracking_code):
+    def check_delivery(tracking_code):
         """Checks whether the tracking_code is in shipments_store and delivery_day is
          correct"""
-        self.validate_tracking_code(tracking_code)
+        TrackingCode(tracking_code)
         shipments_store_file = JSON_FILES_PATH + "shipments_store.json"
         try:
             with open(shipments_store_file, "r", encoding="utf-8", newline="") as file:

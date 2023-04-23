@@ -7,7 +7,7 @@ from uc3m_logistics.order_request import OrderRequest
 from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_shipping import OrderShipping
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
-from uc3m_logistics.send_methods import Sendmethods
+from uc3m_logistics.check_methods import CheckMethods
 
 
 class OrderManager:
@@ -90,7 +90,7 @@ class OrderManager:
         """Sends the order included in the input_file"""
         try:
             # check all the information
-            check_send = Sendmethods()
+            check_send = CheckMethods()
             data = check_send.validate_product(input_file)
             check_send.check_product(data["OrderID"], data["ContactEmail"])
         except KeyError as ex:
@@ -124,7 +124,7 @@ class OrderManager:
     @staticmethod
     def deliver_product(tracking_code):
         """Register the delivery of the product"""
-        Sendmethods().check_delivery(tracking_code)
+        CheckMethods().check_delivery(tracking_code)
         shipments_file = JSON_FILES_PATH + "shipments_delivered.json"
 
         try:

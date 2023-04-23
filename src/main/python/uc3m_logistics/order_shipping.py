@@ -3,7 +3,7 @@ from datetime import datetime
 import hashlib
 import re
 from uc3m_logistics.order_management_exception import OrderManagementException
-
+from .attribute_tracking_code import TrackingCode
 
 # pylint: disable=too-many-instance-attributes
 class OrderShipping:
@@ -24,7 +24,7 @@ class OrderShipping:
         # timestamp is represneted in seconds.microseconds
         # __delivery_day must be expressed in senconds to be added to the timestap
         self.__delivery_day = self.__issued_at + (delivery_days * 24 * 60 * 60)
-        self.__tracking_code = hashlib.sha256(self.__signature_string().encode()).hexdigest()
+        self.__tracking_code = TrackingCode(hashlib.sha256(self.__signature_string().encode()).hexdigest()).value
 
     def __signature_string(self):
         """Composes the string to be used for generating the tracking_code"""
