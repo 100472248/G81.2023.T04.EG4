@@ -7,7 +7,7 @@ from uc3m_logistics.order_request import OrderRequest
 from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_shipping import OrderShipping
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
-from uc3m_logistics.json_methods import Jsonmethods
+from uc3m_logistics.send_methods import Sendmethods
 
 
 class OrderManager:
@@ -17,34 +17,7 @@ class OrderManager:
         pass
 
     @staticmethod
-    def validate_ean13(ean13):
-        """Method for validating an ean13 code"""
-        checksum = 0
-        ultima_cifra = -1
-        regex_ean13 = re.compile("^[0-9]{13}$")
-        if regex_ean13.fullmatch(ean13) is None:
-            raise OrderManagementException("Invalid EAN13 code string")
-        for cifra, digit in enumerate(ean13):
-            if cifra == 12:
-                ultima_cifra = int(digit)
-            elif cifra % 2 != 0:
-                checksum += int(digit) * 3
-            else:
-                checksum += int(digit)
-        control_digit = (10 - (checksum % 10)) % 10
-        if ultima_cifra != control_digit:
-            raise OrderManagementException("Invalid EAN13 control digit")
-        return True
-
-    @staticmethod
-    def validate_tracking_code(t_c):
-        """Method for validating sha256 values"""
-        myregex = re.compile(r"[0-9a-fA-F]{64}$")
-        if not myregex.fullmatch(t_c):
-            raise OrderManagementException("tracking_code format is not valid")
-
-    @staticmethod
-    def save_store(data):
+    def save_store(data: OrderRequest):
         """Method for saving the orders store"""
         file_store = JSON_FILES_PATH + "orders_store.json"
         try:
@@ -71,7 +44,7 @@ class OrderManager:
         return True
 
     @staticmethod
-    def save_fast(data):
+    def save_fast(data: OrderRequest):
         """Method for saving the orders store"""
         orders_store = JSON_FILES_PATH + "orders_store.json"
         with open(orders_store, "r+", encoding="utf-8", newline="") as file:
@@ -81,7 +54,7 @@ class OrderManager:
             json.dump(data_list, file, indent=2)
 
     @staticmethod
-    def save_orders_shipped(shipment):
+    def save_orders_shipped(shipment: OrderShipping):
         """Saves the shipping object into a file"""
         shimpents_store_file = JSON_FILES_PATH + "shipments_store.json"
         try:
@@ -106,39 +79,43 @@ class OrderManager:
     def register_order(self, product_id, order_type,
                        address, phone_number, zip_code):
         """Register the orders into the order's file"""
-        self.validate_ean13(product_id)
-        self.validate_order_type(order_type)
-        self.validate_address(address)
-        self.validate_phone_number(phone_number)
-        self.validate_zip_code(zip_code)
         my_order = OrderRequest(product_id, order_type, address,
                                 phone_number, zip_code)
+        self.validate_ean13(product_id)
+        self.validate_attr(order_type, r"(Regular|Premium)", "order_type is not valid")
+        self.validate_attr(address, r"^(?=^.{20,100}$)(([a-zA-Z0-9]+\s)+[a-zA-Z0-9]+)$",
+                           "address is not valid")
+        self.validate_attr(phone_number, r"^(\+)[0-9]{11}", "phone number is not valid")
+        self.validate_zip_code(zip_code)
         self.save_store(my_order)
         return my_order.order_id
 
     @staticmethod
-    def validate_order_type(order_type):
-        """Estudia si la orden es regular o premium."""
-        myregex = re.compile(r"(Regular|Premium)")
-        validation = myregex.fullmatch(order_type)
-        if not validation:
-            raise OrderManagementException("order_type is not valid")
+    def validate_ean13(ean13):
+        """Method for validating an ean13 code"""
+        checksum = 0
+        ultima_cifra = -1
+        regex_ean13 = re.compile("^[0-9]{13}$")
+        if regex_ean13.fullmatch(ean13) is None:
+            raise OrderManagementException("Invalid EAN13 code string")
+        for cifra, digit in enumerate(ean13):
+            if cifra == 12:
+                ultima_cifra = int(digit)
+            elif cifra % 2 != 0:
+                checksum += int(digit) * 3
+            else:
+                checksum += int(digit)
+        control_digit = (10 - (checksum % 10)) % 10
+        if ultima_cifra != control_digit:
+            raise OrderManagementException("Invalid EAN13 control digit")
         return True
 
     @staticmethod
-    def validate_address(address):
-        """Indica si la dirección es indicada."""
-        myregex = re.compile(r"^(?=^.{20,100}$)(([a-zA-Z0-9]+\s)+[a-zA-Z0-9]+)$")
-        if not myregex.fullmatch(address):
-            raise OrderManagementException("address is not valid")
-        return True
-
-    @staticmethod
-    def validate_phone_number(phone_number):
-        """Valida el número de teléfono."""
-        myregex = re.compile(r"^(\+)[0-9]{11}")
-        if not myregex.fullmatch(phone_number):
-            raise OrderManagementException("phone number is not valid")
+    def validate_attr(atributo, patron, mensaje_error: str):
+        """Función para validar los distintos atributos"""
+        myregex = re.compile(patron)
+        if not myregex.fullmatch(atributo):
+            raise OrderManagementException(mensaje_error)
         return True
 
     @staticmethod
@@ -151,32 +128,29 @@ class OrderManager:
             raise OrderManagementException("zip_code format is not valid")
         return True
 
+    @staticmethod
+    def validate_tracking_code(tracking_code):
+        """Method for validating sha256 values"""
+        myregex = re.compile(r"[0-9a-fA-F]{64}$")
+        if not myregex.fullmatch(tracking_code):
+            raise OrderManagementException("tracking_code format is not valid")
+
     # pylint: disable=too-many-locals
 
     def send_product(self, input_file):
         """Sends the order included in the input_file"""
         try:
-            with open(input_file, "r", encoding="utf-8", newline="") as file:
-                data = json.load(file)
-        except FileNotFoundError as ex:
-            # file is not found
-            raise OrderManagementException("File is not found") from ex
-        except json.JSONDecodeError as ex:
-            raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
-        # check all the information
-        try:
-            check_send = Jsonmethods()
-            check_send.validate_send_product(data["OrderID"], data["ContactEmail"])
+            # check all the information
+            check_send = Sendmethods()
+            data = check_send.validate_product(input_file)
+            check_send.check_product(data["OrderID"], data["ContactEmail"])
         except KeyError as ex:
             raise OrderManagementException("Bad label") from ex
-
         file_store = JSON_FILES_PATH + "orders_store.json"
         with open(file_store, "r", encoding="utf-8", newline="") as file:
             data_list = json.load(file)
         found = False
-        pro_id = None
-        reg_type = None
+        order = None
         for item in data_list:
             # set the time when the order was registered for checking the md5
             with freeze_time(datetime.fromtimestamp(item["_OrderRequest__time_stamp"]).date()):
@@ -188,13 +162,11 @@ class OrderManager:
             if order.order_id != data["OrderID"]:
                 raise OrderManagementException("Orders' data have been manipulated")
             found = True
-            pro_id = order.product_id
-            reg_type = order.order_type
         if not found:
             raise OrderManagementException("order_id not found")
-        my_sign = OrderShipping(product_id=item["_OrderRequest__product_id"],
+        my_sign = OrderShipping(product_id=order.product_id,
                                 order_id=data["OrderID"],
-                                order_type=reg_type,
+                                order_type=order.order_type,
                                 delivery_email=data["ContactEmail"])
         # save the OrderShipping in shipments_store.json
         self.save_orders_shipped(my_sign)
