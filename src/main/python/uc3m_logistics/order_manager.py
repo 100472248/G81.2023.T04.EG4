@@ -56,9 +56,9 @@ class OrderManager:
     @staticmethod
     def save_orders_shipped(shipment: OrderShipping):
         """Saves the shipping object into a file"""
-        shimpents_store_file = JSON_FILES_PATH + "shipments_store.json"
+        shipments_store_file = JSON_FILES_PATH + "shipments_store.json"
         try:
-            with open(shimpents_store_file, "r", encoding="utf-8", newline="") as file:
+            with open(shipments_store_file, "r", encoding="utf-8", newline="") as file:
                 data_list = json.load(file)
         except FileNotFoundError:
             # file is not found , so init my data_list
@@ -70,7 +70,7 @@ class OrderManager:
         data_list.append(shipment.__dict__)
 
         try:
-            with open(shimpents_store_file, "w", encoding="utf-8", newline="") as file:
+            with open(shipments_store_file, "w", encoding="utf-8", newline="") as file:
                 json.dump(data_list, file, indent=2)
         except FileNotFoundError as ex:
             raise OrderManagementException("Wrong file or file path") from ex
@@ -83,14 +83,6 @@ class OrderManager:
                                 phone_number, zip_code)
         self.save_store(my_order)
         return my_order.order_id
-
-    @staticmethod
-    def validate_tracking_code(tracking_code):
-        """Method for validating sha256 values"""
-        myregex = re.compile(r"[0-9a-fA-F]{64}$")
-        if not myregex.fullmatch(tracking_code):
-            raise OrderManagementException("tracking_code format is not valid")
-        return tracking_code
 
     # pylint: disable=too-many-locals
 
@@ -129,36 +121,10 @@ class OrderManager:
         self.save_orders_shipped(my_sign)
         return my_sign.tracking_code
 
-    def check_delivery(self, tracking_code):
-        """Checks whether the tracking_code is in shipments_store and delivery_day is
-         correct"""
-        self.validate_tracking_code(tracking_code)
-        shipments_store_file = JSON_FILES_PATH + "shipments_store.json"
-        try:
-            with open(shipments_store_file, "r", encoding="utf-8", newline="") as file:
-                data_list = json.load(file)
-        except json.JSONDecodeError as ex:
-            raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
-        except FileNotFoundError as ex:
-            raise OrderManagementException("shipments_store not found") from ex
-
-        found = False
-        delivery_day_timestamp = None
-        for item in data_list:
-            if item["_OrderShipping__tracking_code"] == tracking_code:
-                found = True
-                delivery_day_timestamp = item["_OrderShipping__delivery_day"]
-        if not found:
-            raise OrderManagementException("tracking_code is not found")
-
-        today = datetime.today().date()
-        delivery_date = datetime.fromtimestamp(delivery_day_timestamp).date()
-        if delivery_date != today:
-            raise OrderManagementException("Today is not the delivery date")
-
-    def deliver_product(self, tracking_code):
+    @staticmethod
+    def deliver_product(tracking_code):
         """Register the delivery of the product"""
-        self.check_delivery(tracking_code)
+        Sendmethods().check_delivery(tracking_code)
         shipments_file = JSON_FILES_PATH + "shipments_delivered.json"
 
         try:

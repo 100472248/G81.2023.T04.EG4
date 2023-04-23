@@ -1,6 +1,8 @@
 """Contains the class OrderShipping"""
 from datetime import datetime
 import hashlib
+import re
+from uc3m_logistics.order_management_exception import OrderManagementException
 
 
 # pylint: disable=too-many-instance-attributes
@@ -27,8 +29,8 @@ class OrderShipping:
     def __signature_string(self):
         """Composes the string to be used for generating the tracking_code"""
         return "{alg:" + self.__alg + ",typ:" + self.__type + ",order_id:" + \
-            self.__order_id + ",issuedate:" + str(self.__issued_at) + \
-            ",deliveryday:" + str(self.__delivery_day) + "}"
+               self.__order_id + ",issuedate:" + str(self.__issued_at) + \
+               ",deliveryday:" + str(self.__delivery_day) + "}"
 
     @property
     def product_id(self):

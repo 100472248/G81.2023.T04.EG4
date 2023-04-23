@@ -2,12 +2,50 @@
 import json
 import re
 from uc3m_logistics.order_management_exception import OrderManagementException
+from uc3m_logistics.order_manager_config import JSON_FILES_PATH
+from datetime import datetime
 
 
 class Sendmethods:
-    """Clase con las funciones de los json."""
+    """Clase con las funciones relacionadas con comprobar la validez de los diversos productos o atributos
+    de order_request y order_shipping para usarlos en order_manager"""
+
     def __init__(self):
         pass
+
+    @staticmethod
+    def validate_tracking_code(tracking_code):
+        """Method for validating sha256 values"""
+        myregex = re.compile(r"[0-9a-fA-F]{64}$")
+        if not myregex.fullmatch(tracking_code):
+            raise OrderManagementException("tracking_code format is not valid")
+
+    def check_delivery(self, tracking_code):
+        """Checks whether the tracking_code is in shipments_store and delivery_day is
+         correct"""
+        self.validate_tracking_code(tracking_code)
+        shipments_store_file = JSON_FILES_PATH + "shipments_store.json"
+        try:
+            with open(shipments_store_file, "r", encoding="utf-8", newline="") as file:
+                data_list = json.load(file)
+        except json.JSONDecodeError as ex:
+            raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
+        except FileNotFoundError as ex:
+            raise OrderManagementException("shipments_store not found") from ex
+
+        found = False
+        delivery_day_timestamp = None
+        for item in data_list:
+            if item["_OrderShipping__tracking_code"] == tracking_code:
+                found = True
+                delivery_day_timestamp = item["_OrderShipping__delivery_day"]
+        if not found:
+            raise OrderManagementException("tracking_code is not found")
+
+        today = datetime.today().date()
+        delivery_date = datetime.fromtimestamp(delivery_day_timestamp).date()
+        if delivery_date != today:
+            raise OrderManagementException("Today is not the delivery date")
 
     @staticmethod
     def check_product(order_id, email):
