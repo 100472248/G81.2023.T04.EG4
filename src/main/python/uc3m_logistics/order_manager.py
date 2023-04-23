@@ -81,52 +81,8 @@ class OrderManager:
         """Register the orders into the order's file"""
         my_order = OrderRequest(product_id, order_type, address,
                                 phone_number, zip_code)
-        self.validate_ean13(product_id)
-        self.validate_attr(order_type, r"(Regular|Premium)", "order_type is not valid")
-        self.validate_attr(address, r"^(?=^.{20,100}$)(([a-zA-Z0-9]+\s)+[a-zA-Z0-9]+)$",
-                           "address is not valid")
-        self.validate_attr(phone_number, r"^(\+)[0-9]{11}", "phone number is not valid")
-        self.validate_zip_code(zip_code)
         self.save_store(my_order)
         return my_order.order_id
-
-    @staticmethod
-    def validate_ean13(ean13):
-        """Method for validating an ean13 code"""
-        checksum = 0
-        ultima_cifra = -1
-        regex_ean13 = re.compile("^[0-9]{13}$")
-        if regex_ean13.fullmatch(ean13) is None:
-            raise OrderManagementException("Invalid EAN13 code string")
-        for cifra, digit in enumerate(ean13):
-            if cifra == 12:
-                ultima_cifra = int(digit)
-            elif cifra % 2 != 0:
-                checksum += int(digit) * 3
-            else:
-                checksum += int(digit)
-        control_digit = (10 - (checksum % 10)) % 10
-        if ultima_cifra != control_digit:
-            raise OrderManagementException("Invalid EAN13 control digit")
-        return True
-
-    @staticmethod
-    def validate_attr(atributo, patron, mensaje_error: str):
-        """Función para validar los distintos atributos"""
-        myregex = re.compile(patron)
-        if not myregex.fullmatch(atributo):
-            raise OrderManagementException(mensaje_error)
-        return True
-
-    @staticmethod
-    def validate_zip_code(zip_code):
-        """Estudia si el código zip es válido."""
-        if zip_code.isnumeric() and len(zip_code) == 5:
-            if int(zip_code) > 52999 or int(zip_code) < 1000:
-                raise OrderManagementException("zip_code is not valid")
-        else:
-            raise OrderManagementException("zip_code format is not valid")
-        return True
 
     @staticmethod
     def validate_tracking_code(tracking_code):
@@ -134,6 +90,7 @@ class OrderManager:
         myregex = re.compile(r"[0-9a-fA-F]{64}$")
         if not myregex.fullmatch(tracking_code):
             raise OrderManagementException("tracking_code format is not valid")
+        return tracking_code
 
     # pylint: disable=too-many-locals
 
