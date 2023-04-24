@@ -29,6 +29,7 @@ class JsonDeliverStore(JsonStoreMaster):
         self.save_store()
 
     def find_tracking_code(self, tracking_code):
+        """To locate an item with its tracking code"""
         self.load_store()
         self.read_shipping_store()
         item = self.find_by_track(tracking_code)
@@ -38,6 +39,7 @@ class JsonDeliverStore(JsonStoreMaster):
         return delivery_day_timestamp
 
     def read_shipping_store(self):
+        """It reads the shipping store file"""
         try:
             with open(self._file_path, "r", encoding="utf-8", newline="") as file:
                 self._data_list = json.load(file)

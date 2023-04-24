@@ -4,7 +4,7 @@ from uc3m_logistics.order_management_exception import OrderManagementException
 
 
 class Attribute:
-    """Clase madre de los atributos"""
+    """Masterclass of the attributes"""
     def __init__(self):
         self._attr_value = ""
         self._error_message = ""

@@ -4,7 +4,7 @@ from uc3m_logistics.order_management_exception import OrderManagementException
 
 
 class JsonStoreMaster:
-    """Clase master de los almacenes"""
+    """Masterclass of the orders and delivers"""
     def __init__(self):
         self._file_path = ""
         self._data_list = []
@@ -12,7 +12,7 @@ class JsonStoreMaster:
         self._tracking_code = ""
 
     def load_store(self):
-        """Inicializa el almacén."""
+        """Checks if the file exists and if there isn´t any problem"""
         try:
             with open(self._file_path, "r", encoding="utf-8", newline="") as file:
                 self._data_list = json.load(file)
@@ -23,7 +23,7 @@ class JsonStoreMaster:
             raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
 
     def save_store(self):
-        """Guarda el almacén"""
+        """Saves the store with its actual content"""
         try:
             with open(self._file_path, "w", encoding="utf-8", newline="") as file:
                 json.dump(self._data_list, file, indent=2)
@@ -31,7 +31,7 @@ class JsonStoreMaster:
             raise OrderManagementException("Wrong file or file path") from ex
 
     def find_data(self, data_find):
-        """Para encontrar el dato."""
+        """Searchs an order with its ID"""
         for item in self._data_list:
             if item[self._id_field] == data_find:
                 return item
@@ -45,7 +45,7 @@ class JsonStoreMaster:
         return None
 
     def add_item(self, item):
-        """Añadir un nuevo item de forma general"""
+        """Adds a new order"""
         self.load_store()
         self._data_list.append(item)
         self.save_store()

@@ -1,9 +1,11 @@
+"""Module"""
 from datetime import datetime
 from uc3m_logistics.attribute_tracking_code import TrackingCode
 from uc3m_logistics.order_management_exception import OrderManagementException
 
 
-class OrderDelivered():
+class OrderDelivered:
+    """To check data from the delivered orders"""
     def __init__(self, tracking_code):
         self.__tracking_code = TrackingCode(tracking_code).value
         self.__date_delivered = datetime.utcnow().__str__()

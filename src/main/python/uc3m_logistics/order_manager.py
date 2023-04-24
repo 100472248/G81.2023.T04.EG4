@@ -1,14 +1,10 @@
 """Module """
-import json
-from datetime import datetime
 from uc3m_logistics.order_request import OrderRequest
 from uc3m_logistics.order_management_exception import OrderManagementException
 from uc3m_logistics.order_shipping import OrderShipping
-from uc3m_logistics.order_manager_config import JSON_FILES_PATH
-from uc3m_logistics.attribute_tracking_code import TrackingCode
-from .json_deliver_store import JsonDeliverStore
-from.json_order_store import JsonOrderStore
-from .order_delivered import OrderDelivered
+from uc3m_logistics.json_deliver_store import JsonDeliverStore
+from uc3m_logistics.json_order_store import JsonOrderStore
+from uc3m_logistics.order_delivered import OrderDelivered
 
 
 class OrderManager:
@@ -25,7 +21,7 @@ class OrderManager:
         my_order = OrderRequest(product_id, order_type, address,
                                 phone_number, zip_code)
         my_store = JsonOrderStore()
-        my_store.sub_add_item(my_order)
+        my_store.add_item(my_order)
         return my_order.order_id
 
     # pylint: disable=too-many-locals
@@ -42,7 +38,8 @@ class OrderManager:
         my_store.save_orders_shipped(my_sign)
         return my_sign.tracking_code
 
-    def deliver_product(self, tracking_code):
+    @staticmethod
+    def deliver_product(tracking_code):
         """Register the delivery of the product"""
         my_deliver = OrderDelivered(tracking_code)
         my_store = JsonDeliverStore()
