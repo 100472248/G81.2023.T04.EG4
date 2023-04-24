@@ -7,6 +7,7 @@ from uc3m_logistics.order_shipping import OrderShipping
 from uc3m_logistics.order_manager_config import JSON_FILES_PATH
 from uc3m_logistics.attribute_tracking_code import TrackingCode
 from .json_store import JsonStore
+from .order_delivered import OrderDelivered
 
 
 class OrderManager:
@@ -42,62 +43,10 @@ class OrderManager:
 
     def deliver_product(self, tracking_code):
         """Register the delivery of the product"""
-        TrackingCode(tracking_code)
-        data_list = self.read_shipping_store()
-        del_timestamp = self.find_tracking_code(data_list, tracking_code)
-        self.check_date(del_timestamp)
-        self.save_delivery_store(tracking_code)
+        my_deliver = OrderDelivered(tracking_code)
+        my_store = JsonStore()
+        data_list = my_store.read_shipping_store()
+        del_timestamp = my_store.find_tracking_code(data_list, tracking_code)
+        my_deliver.check_date(del_timestamp)
+        my_store.save_delivery_store(my_deliver)
         return True
-
-    @staticmethod
-    def save_delivery_store(tracking_code):
-        shipments_file = JSON_FILES_PATH + "shipments_delivered.json"
-        try:
-            with open(shipments_file, "r", encoding="utf-8", newline="") as file:
-                data_list = json.load(file)
-        except FileNotFoundError:
-            # file is not found , so  init my data_list
-            data_list = []
-        except json.JSONDecodeError as ex:
-            raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
-
-        # append the delivery info
-        data_list.append(str(tracking_code))
-        data_list.append(str(datetime.utcnow()))
-        try:
-            with open(shipments_file, "w", encoding="utf-8", newline="") as file:
-                json.dump(data_list, file, indent=2)
-        except FileNotFoundError as ex:
-            raise OrderManagementException("Wrong file or file path") from ex
-
-    @staticmethod
-    def check_date(del_timestamp):
-        """checks if the given date == today's date"""
-        today = datetime.today().date()
-        delivery_date = datetime.fromtimestamp(del_timestamp).date()
-        if delivery_date != today:
-            raise OrderManagementException("Today is not the delivery date")
-
-    @staticmethod
-    def find_tracking_code(data_list, tracking_code):
-        found = False
-        delivery_day_timestamp = None
-        for item in data_list:
-            if item["_OrderShipping__tracking_code"] == tracking_code:
-                found = True
-                delivery_day_timestamp = item["_OrderShipping__delivery_day"]
-        if not found:
-            raise OrderManagementException("tracking_code is not found")
-        return delivery_day_timestamp
-
-    @staticmethod
-    def read_shipping_store():
-        shipments_store_file = JSON_FILES_PATH + "shipments_store.json"
-        try:
-            with open(shipments_store_file, "r", encoding="utf-8", newline="") as file:
-                data_list = json.load(file)
-        except json.JSONDecodeError as ex:
-            raise OrderManagementException("JSON Decode Error - Wrong JSON Format") from ex
-        except FileNotFoundError as ex:
-            raise OrderManagementException("shipments_store not found") from ex
-        return data_list
