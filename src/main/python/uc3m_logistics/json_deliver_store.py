@@ -25,7 +25,7 @@ class JsonDeliverStore(JsonStoreMaster):
         """Save the delivery with its tracking code"""
         self.load_store()
         # append the delivery info
-        self._data_list.append(tracking_code.__dict__)
+        self._data_list.append(tracking_code)
         self.save_store()
 
     def find_tracking_code(self, tracking_code):

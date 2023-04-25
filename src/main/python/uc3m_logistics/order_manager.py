@@ -42,9 +42,6 @@ class OrderManager:
     def deliver_product(tracking_code):
         """Register the delivery of the product"""
         my_deliver = OrderDelivered(tracking_code)
-        my_store = JsonDeliverStore()
-        my_store.read_shipping_store()
-        del_timestamp = my_store.find_tracking_code(tracking_code)
+        del_timestamp = my_deliver.check_tracking_code()
         my_deliver.check_date(del_timestamp)
-        my_store.save_delivery_store(my_deliver)
         return True
