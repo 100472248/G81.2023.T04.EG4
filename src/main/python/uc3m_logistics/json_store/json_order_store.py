@@ -1,7 +1,7 @@
 """Module"""
-from uc3m_logistics.order_manager_config import JSON_FILES_PATH
-from uc3m_logistics.order_management_exception import OrderManagementException
-from uc3m_logistics.json_store_master import JsonStoreMaster
+from uc3m_logistics.exception.order_manager_config import JSON_FILES_PATH
+from uc3m_logistics.config.order_management_exception import OrderManagementException
+from uc3m_logistics.json_store.json_store_master import JsonStoreMaster
 
 
 class JsonOrderStore(JsonStoreMaster):

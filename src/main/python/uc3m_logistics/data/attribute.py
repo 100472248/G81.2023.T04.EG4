@@ -1,6 +1,6 @@
 """..."""
 import re
-from uc3m_logistics.order_management_exception import OrderManagementException
+from uc3m_logistics.config.order_management_exception import OrderManagementException
 
 
 class Attribute:

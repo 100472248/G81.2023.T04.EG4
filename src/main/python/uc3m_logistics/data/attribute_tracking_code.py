@@ -1,5 +1,5 @@
 """..."""
-from uc3m_logistics.attribute import Attribute
+from uc3m_logistics.data.attribute import Attribute
 
 
 class TrackingCode(Attribute):

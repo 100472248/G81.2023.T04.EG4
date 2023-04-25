@@ -4,10 +4,10 @@ import hashlib
 import re
 import json
 from freezegun import freeze_time
-from uc3m_logistics.order_request import OrderRequest
-from uc3m_logistics.order_management_exception import OrderManagementException
-from uc3m_logistics.order_manager_config import JSON_FILES_PATH
-from uc3m_logistics.attribute_tracking_code import TrackingCode
+from uc3m_logistics.order_data.order_request import OrderRequest
+from uc3m_logistics.config.order_management_exception import OrderManagementException
+from uc3m_logistics.exception.order_manager_config import JSON_FILES_PATH
+from uc3m_logistics.data.attribute_tracking_code import TrackingCode
 
 
 # pylint: disable=too-many-instance-attributes

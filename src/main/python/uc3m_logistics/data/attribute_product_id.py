@@ -1,6 +1,6 @@
 """Module"""
-from .attribute import Attribute
-from uc3m_logistics.order_management_exception import OrderManagementException
+from uc3m_logistics.data.attribute import Attribute
+from uc3m_logistics.config.order_management_exception import OrderManagementException
 
 
 class ProductId(Attribute):

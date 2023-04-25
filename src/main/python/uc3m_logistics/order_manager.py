@@ -1,10 +1,10 @@
 """Module """
-from uc3m_logistics.order_request import OrderRequest
-from uc3m_logistics.order_management_exception import OrderManagementException
-from uc3m_logistics.order_shipping import OrderShipping
-from uc3m_logistics.json_deliver_store import JsonDeliverStore
-from uc3m_logistics.json_order_store import JsonOrderStore
-from uc3m_logistics.order_delivered import OrderDelivered
+from uc3m_logistics.order_data.order_request import OrderRequest
+from uc3m_logistics.config.order_management_exception import OrderManagementException
+from uc3m_logistics.order_data.order_shipping import OrderShipping
+from uc3m_logistics.json_store.json_deliver_store import JsonDeliverStore
+from uc3m_logistics.json_store.json_order_store import JsonOrderStore
+from uc3m_logistics.order_data.order_delivered import OrderDelivered
 
 
 class OrderManager:

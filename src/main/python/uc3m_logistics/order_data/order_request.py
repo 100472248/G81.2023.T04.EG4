@@ -1,14 +1,12 @@
 """MODULE: order_request. Contains the order request class"""
 import hashlib
 import json
-import re
 from datetime import datetime
-from uc3m_logistics.order_management_exception import OrderManagementException
-from .attribute_phone_number import PhoneNumber
-from .attribute_order_type import OrderType
-from .attribute_delivery_address import DeliveryAddress
-from .attribute_product_id import ProductId
-from .attribute_zip_code import ZipCode
+from uc3m_logistics.data.attribute_phone_number import PhoneNumber
+from uc3m_logistics.data.attribute_order_type import OrderType
+from uc3m_logistics.data.attribute_delivery_address import DeliveryAddress
+from uc3m_logistics.data.attribute_product_id import ProductId
+from uc3m_logistics.data.attribute_zip_code import ZipCode
 
 
 class OrderRequest:

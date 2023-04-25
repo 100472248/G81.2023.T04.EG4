@@ -1,8 +1,8 @@
 """Module"""
 from datetime import datetime
-from uc3m_logistics.attribute_tracking_code import TrackingCode
-from uc3m_logistics.order_management_exception import OrderManagementException
-from uc3m_logistics.json_deliver_store import JsonDeliverStore
+from uc3m_logistics.data.attribute_tracking_code import TrackingCode
+from uc3m_logistics.config.order_management_exception import OrderManagementException
+from uc3m_logistics.json_store.json_deliver_store import JsonDeliverStore
 
 
 class OrderDelivered:
