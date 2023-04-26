@@ -8,8 +8,9 @@ from uc3m_logistics.order_data.order_delivered import OrderDelivered
 
 
 class OrderManager:
+    """Main class for providing the methods for managing the orders process"""
     class __OrderManager:
-        """Class for providing the methods for managing the orders process"""
+        """Private OrderManager"""
 
         def __init__(self):
             pass

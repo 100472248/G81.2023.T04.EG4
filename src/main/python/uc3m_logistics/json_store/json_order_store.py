@@ -5,8 +5,9 @@ from uc3m_logistics.json_store.json_store_master import JsonStoreMaster
 
 
 class JsonOrderStore:
+    """Main subclass used for the orders"""
     class __JsonOrderStore(JsonStoreMaster):
-        """Subclass used for the orders"""
+        """Private JsonOrderStore"""
 
         def __init__(self):
             self._file_path = JSON_FILES_PATH + "orders_store.json"
