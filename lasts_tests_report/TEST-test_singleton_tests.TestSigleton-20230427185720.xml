@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="test_singleton_tests.TestSigleton-20230427185720" tests="3" file="test_singleton_tests.py" time="0.003" timestamp="2023-04-27T18:57:21" failures="0" errors="0" skipped="0">
+	<testcase classname="test_singleton_tests.TestSigleton" name="test_singleton_json_deliver_store" time="0.001" timestamp="2023-04-27T18:57:21"/>
+	<testcase classname="test_singleton_tests.TestSigleton" name="test_singleton_json_order_store" time="0.001" timestamp="2023-04-27T18:57:21"/>
+	<testcase classname="test_singleton_tests.TestSigleton" name="test_singleton_order_manager" time="0.001" timestamp="2023-04-27T18:57:21"/>
+</testsuite>

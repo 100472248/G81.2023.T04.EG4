@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="test_send_product_tests.TestSendProduct-20230427185720" tests="4" file="test_send_product_tests.py" time="0.391" timestamp="2023-04-27T18:57:21" failures="0" errors="0" skipped="0">
+	<testcase classname="test_send_product_tests.TestSendProduct" name="test_get_vaccine_date_no_ok_data_manipulated" time="0.011" timestamp="2023-04-27T18:57:20"/>
+	<testcase classname="test_send_product_tests.TestSendProduct" name="test_get_vaccine_date_no_ok_parameter" time="0.353" timestamp="2023-04-27T18:57:21"/>
+	<testcase classname="test_send_product_tests.TestSendProduct" name="test_send_product_premium" time="0.016" timestamp="2023-04-27T18:57:21"/>
+	<testcase classname="test_send_product_tests.TestSendProduct" name="test_send_product_regular" time="0.011" timestamp="2023-04-27T18:57:21"/>
+</testsuite>

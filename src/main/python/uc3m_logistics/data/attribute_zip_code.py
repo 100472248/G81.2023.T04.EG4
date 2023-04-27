@@ -1,8 +1,10 @@
+"""Module"""
 from uc3m_logistics.data.attribute import Attribute
 from uc3m_logistics.config.order_management_exception import OrderManagementException
 
 
 class ZipCode(Attribute):
+    """Subclass of the zip_code"""
     def __init__(self, attr_value):
         self._error_message = "zip_code is not valid"
         self._validation_pattern = ""

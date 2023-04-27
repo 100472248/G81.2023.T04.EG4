@@ -78,4 +78,3 @@ class OrderRequest:
     def zip_code(self):
         """Returns the order's zip_code"""
         return self.__zip_code
-

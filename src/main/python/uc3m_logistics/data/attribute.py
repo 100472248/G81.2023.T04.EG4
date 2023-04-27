@@ -10,11 +10,11 @@ class Attribute:
         self._error_message = ""
         self._validation_pattern = r""
 
-    def _validate(self, value):
+    def _validate(self, attr_value):
         myregex = re.compile(self._validation_pattern)
-        if not myregex.fullmatch(value):
+        if not myregex.fullmatch(attr_value):
             raise OrderManagementException(self._error_message)
-        return value
+        return attr_value
 
     @property
     def value(self):
